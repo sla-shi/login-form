@@ -1,4 +1,37 @@
+
 document.addEventListener('DOMContentLoaded', () => {
+
+  fetch('/quotes/init-form')
+    .then(response => response.json())
+    .then(data => {
+      populateForm(data);
+    })
+    .catch(error => {
+      console.log('Error fetching init from data: ', error);
+    });
+  
+  //Function for dynamically filling form fields
+  function populateForm(data) {
+    const serviceTypeSelect = document.getElementById('service_type');
+    const squareFootageSelect = document.getElementById('square_footage');
+
+    //Filling services
+    data.services.forEach(service => {
+      const option = document.createElement('option');
+      option.value = service.id;
+      option.textContent = service.name;
+      serviceTypeSelect.appendChild(option);
+    });
+
+    //The square footage ranges
+    data.square_footage.forEach(range => {
+      const option = document.createElement('option');
+      option.value = range.id;
+      option.textContent = range.range_limit;
+      squareFootageSelect.appendChild(option);
+    });
+  }
+
   document.getElementById('quoteForm').addEventListener('submit', function (event) {
   event.preventDefault();
   

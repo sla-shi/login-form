@@ -5,12 +5,16 @@ const PORT = 3000;
 
 app.use(express.json());
 
-app.use(express.static(path.join(__dirname, '../client')));
+app.use(express.static(path.join(__dirname, '..', 'client')));
+
+app.get('/quotes', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'quote_form.html'))
+})
 
 app.post('/quotes', (req, res) => {
   const formData = req.body;
   console.log('Received from submitted successfully', formData);
-  res.json({ message: 'Form submitted successfully', data: formData });
+ res.json({ message: 'Form submitted successfully', data: formData });
 });
 
 app.get('/quotes/init-form', (req, res) => {

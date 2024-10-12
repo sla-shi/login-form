@@ -83,35 +83,75 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  fetch('/quotes/init-form')
-    .then(response => response.json())
+  //Mocking the fetch for /quotes/init-form
+  function mockFetch() {
+    return new Promise((resolve) => {
+      const mockData = {
+        services: [
+          { id: 1, name: "Deep Clean" },
+          { id: 2, name: "Routine clean - Weekly" },
+          { id: 3, name: "Routine clean - Biweekly" },
+        ],
+        square_footage: [
+          { id: 1, range_limit: "1 - 900" },
+          { id: 2, range_limit: "901 - 1200" },
+          { id: 3, range_limit: "1201 - 1500" },
+        ]
+      };
+
+      //Simulate a delay like real fetch
+      setTimeout(() => {
+        resolve({
+          ok: true,
+          json: () => Promise.resolve(mockData)
+        });
+      }, 500);
+    });
+  }
+
+  // fetch('/quotes/init-form')
+  mockFetch()
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch from data');
+      }
+      return response.json();
+    })
     .then(data => {
-      populateForm(data);
+      if (data && data.services && data.square_footage) {
+        populateForm(data);
+      } else {
+        console.error('Invalid data structure from server');
+      }
     })
     .catch(error => {
       console.log('Error fetching init from data: ', error);
-    });
+  });
   
   //Function for dynamically filling form fields
   function populateForm(data) {
     const serviceTypeSelect = document.getElementById('service_type');
     const squareFootageSelect = document.getElementById('square_footage');
 
-    //Filling services
-    data.services.forEach(service => {
-      const option = document.createElement('option');
-      option.value = service.id;
-      option.textContent = service.name;
-      serviceTypeSelect.appendChild(option);
-    });
-
-    //The square footage ranges
-    data.square_footage.forEach(range => {
-      const option = document.createElement('option');
-      option.value = range.id;
-      option.textContent = range.range_limit;
-      squareFootageSelect.appendChild(option);
-    });
+    if (serviceTypeSelect && squareFootageSelect) {
+      //Filling services
+      data.services.forEach(service => {
+        const option = document.createElement('option');
+        option.value = service.id;
+        option.textContent = service.name;
+        serviceTypeSelect.appendChild(option);
+      });
+      
+      //Filling square footage ranges
+      data.square_footage.forEach(range => {
+        const option = document.createElement('option');
+        option.value = range.id;
+        option.textContent = range.range_limit;
+        squareFootageSelect.appendChild(option);
+      });
+    } else {
+      console.error('Form select elements not found');
+    }
   }
 
   document.getElementById('quoteForm').addEventListener('submit', function (event) {
@@ -152,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
       .then(response => {
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error(`Network response was not ok: ${response.statusText}`);
         }
         return response.json();
       })

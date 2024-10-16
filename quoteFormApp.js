@@ -83,50 +83,97 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  //Mocking the fetch for /quotes/init-form
-  function mockFetch() {
-    return new Promise((resolve) => {
-      const mockData = {
-        services: [
-          { id: 1, name: "Deep Clean" },
-          { id: 2, name: "Routine clean - Weekly" },
-          { id: 3, name: "Routine clean - Biweekly" },
-        ],
-        square_footage: [
-          { id: 1, range_limit: "1 - 900" },
-          { id: 2, range_limit: "901 - 1200" },
-          { id: 3, range_limit: "1201 - 1500" },
-        ]
+  fetchInitFormData();
+
+  document.getElementById('quoteForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const termsCheckbox = document.getElementById('terms');
+
+    if (!termsCheckbox.checked) {
+      event.preventDefault();
+      alert('Please agree to the terms of service before submitting');
+    } else {
+      //Data to send
+      const formData = {
+        client_first_name: document.getElementById('first_name').value,
+        client_last_name: document.getElementById('last_name').value,
+        client_phone: document.getElementById('phone').value,
+        client_email: document.getElementById('email').value,
+        zip_code: document.getElementById('zip_code').value,
+        hear_about_id: parseInt(document.getElementById('hear_about').value, 10),
+        type_location_id: parseInt(document.getElementById('type_location').value, 10),
+        service_type_id: parseInt(document.getElementById('service_type').value, 10),
+        square_footage_id: parseInt(document.getElementById('square_footage').value, 10)
       };
+      
+      if (!formData.client_first_name || !formData.client_last_name || !formData.client_phone || !formData.client_email || !formData.zip_code ||
+        isNaN(formData.hear_about_id) || isNaN(formData.type_location_id) || isNaN(formData.service_type_id) || isNaN(formData.square_footage_id)) {
+        alert('Please fill in all fields');
+        return;
+      }
 
-      //Simulate a delay like real fetch
-      setTimeout(() => {
-        resolve({
-          ok: true,
-          json: () => Promise.resolve(mockData)
+      //Send POST req
+      try {
+        const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
         });
-      }, 500);
-    });
-  }
 
-  // fetch('/quotes/init-form')
-  mockFetch()
-    .then(response => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          //Handling validation errors
+          if (errorData.errors) {
+            const errorMessage = errorData.errors.map(err => {
+              const property = err.property;
+              const constraintMessage = Object.values(err.constraints).join(', ');
+              return `${property}: ${constraintMessage}`;
+            }).join('\n');
+
+            alert(`Validation error: \n${errorMessage}`);
+          } else {
+            throw new Error(`Network response was not ok: ${response.statusText}`);
+          }
+        } else {
+          const data = await response.json();
+          //Processing a positive response
+          if (data.success) {
+            alert(data.message);
+          } else {
+            alert('Unknown error. Please try again.');
+          }
+        }
+      } catch (error) {
+        console.error('Error submitting the form: ', error);
+        alert('Error submitting the form');
+      }
+    }
+  });
+
+  // Function for getting data from api
+  async function fetchInitFormData() {
+    try {
+      const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes/init-form');
+
       if (!response.ok) {
         throw new Error('Failed to fetch from data');
       }
-      return response.json();
-    })
-    .then(data => {
+
+      const data = await response.json();
+
+      //Checking the data structure and filling out the form
       if (data && data.services && data.square_footage) {
         populateForm(data);
       } else {
         console.error('Invalid data structure from server');
       }
-    })
-    .catch(error => {
+    } catch(error) {
       console.log('Error fetching init from data: ', error);
-  });
+    }
+  }
   
   //Function for dynamically filling form fields
   function populateForm(data) {
@@ -153,57 +200,4 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Form select elements not found');
     }
   }
-
-  document.getElementById('quoteForm').addEventListener('submit', function (event) {
-    event.preventDefault();
-
-    const termsCheckbox = document.getElementById('terms');
-
-    if (!termsCheckbox.checked) {
-      event.preventDefault();
-      alert('Please agree to the terms of service before submitting');
-    } else {
-      //Data to send
-    const formData = {
-      first_name: document.getElementById('first_name').value,
-      last_name: document.getElementById('last_name').value,
-      phone: document.getElementById('phone').value,
-      email: document.getElementById('email').value,
-      zip_code: document.getElementById('zip_code').value,
-      hear_about: parseInt(document.getElementById('hear_about').value, 10),
-      type_location: parseInt(document.getElementById('type_location').value, 10),
-      service_type: parseInt(document.getElementById('service_type').value, 10),
-      square_footage: parseInt(document.getElementById('square_footage').value, 10)
-    };
-      
-      if (!formData.first_name || !formData.last_name || !formData.phone || !formData.email || !formData.zip_code ||
-          isNaN(formData.hear_about) || isNaN(formData.type_location) || isNaN(formData.service_type) || isNaN(formData.square_footage)) {
-        alert('Please fill in all fields');
-        return;
-      }
-
-    //Send POST req
-    fetch('/quotes', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formData)
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Form submitted successfully: ', data);
-        alert('Form submitted successfully');
-      })
-      .catch(error => {
-        console.error('Error submitting the form: ', error);
-        alert('Error submitting the form');
-      });
-    }
-  });
 });

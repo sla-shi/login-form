@@ -34,12 +34,16 @@ document.addEventListener('DOMContentLoaded', () => {
               
           <div>
             <label for="hear_about" class="required-label">How did you hear about us?:</label>
-            <input type="number" name="hear_about" id="hear_about" required>
+            <select name="hear_about" id="hear_about" required>
+              <option value="">--Select type--</option>
+            </select>
           </div>
               
           <div>
             <label for="type_location" class="required-label">Location Type:</label>
-            <input type="number" name="type_location" id="type_location" required>
+            <select name="type_location" id="type_location" required>
+              <option value="">--Select type location--</option>
+            </select>
           </div>
               
           <div>
@@ -115,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       //Send POST req
       try {
-        const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes', {
+        const response = await fetch('/api/quotes', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -156,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Function for getting data from api
   async function fetchInitFormData() {
     try {
-      const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes/init-form');
+      const response = await fetch('/api/quotes/init-form');
 
       if (!response.ok) {
         throw new Error('Failed to fetch from data');
@@ -165,8 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       //Checking the data structure and filling out the form
-      if (data && data.services && data.square_footage) {
-        populateForm(data);
+      if (data && data.data) {
+        populateForm(data.data);
       } else {
         console.error('Invalid data structure from server');
       }
@@ -179,8 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function populateForm(data) {
     const serviceTypeSelect = document.getElementById('service_type');
     const squareFootageSelect = document.getElementById('square_footage');
+    const hearAboutSelect = document.getElementById('hear_about');
+    const typeLocationSelect = document.getElementById('type_location');
 
-    if (serviceTypeSelect && squareFootageSelect) {
+    if (serviceTypeSelect && data.services) {
       //Filling services
       data.services.forEach(service => {
         const option = document.createElement('option');
@@ -188,16 +194,33 @@ document.addEventListener('DOMContentLoaded', () => {
         option.textContent = service.name;
         serviceTypeSelect.appendChild(option);
       });
+    }
       
-      //Filling square footage ranges
-      data.square_footage.forEach(range => {
+    if (squareFootageSelect && data.square_footages) {
+      data.square_footages.forEach(range => {
         const option = document.createElement('option');
         option.value = range.id;
-        option.textContent = range.range_limit;
+        option.textContent = range.rage_limit;
         squareFootageSelect.appendChild(option);
       });
-    } else {
-      console.error('Form select elements not found');
+    }
+
+    if (hearAboutSelect && data.hear_about_types) {
+      data.hear_about_types.forEach(hearAbout => {
+        const option = document.createElement('option');
+        option.value = hearAbout.id;
+        option.textContent = hearAbout.name;
+        hearAboutSelect.appendChild(option);
+      });
+    }
+
+    if (typeLocationSelect && data.locations) {
+      data.locations.forEach(location => {
+        const option = document.createElement('option');
+        option.value = location.id;
+        option.textContent = location.name;
+        typeLocationSelect.appendChild(option);
+      });
     }
   }
 });

@@ -129,6 +129,10 @@ button:hover {
   color: #ffa500;
 }
 
+.g-recaptcha {
+  grid-column: 1 / -1
+}
+
 @media (max-width: 600px) {
   .form-body {
     grid-template-columns: 1fr;

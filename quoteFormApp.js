@@ -67,6 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <label for="terms">I agree to the terms of service</label>
           </div>
 
+          <div class="g-recaptcha" data-sitekey="6LcjT2UqAAAAAN7pLljhGFmajWVGSE-5XrsGy6zE"></div>
+
           <div class="terms-notice">
             By submitting this form, you are acknowledging you would like to be contacted by Maids and
             Moore at the phone number provided. Maids and Moore may contact you about its services through
@@ -95,65 +97,90 @@ document.addEventListener('DOMContentLoaded', () => {
     const termsCheckbox = document.getElementById('terms');
 
     if (!termsCheckbox.checked) {
-      event.preventDefault();
       alert('Please agree to the terms of service before submitting');
-    } else {
-      //Data to send
-      const formData = {
-        client_first_name: document.getElementById('first_name').value,
-        client_last_name: document.getElementById('last_name').value,
-        client_phone: document.getElementById('phone').value,
-        client_email: document.getElementById('email').value,
-        zip_code: document.getElementById('zip_code').value,
-        hear_about_id: parseInt(document.getElementById('hear_about').value, 10),
-        type_location_id: parseInt(document.getElementById('type_location').value, 10),
-        service_type_id: parseInt(document.getElementById('service_type').value, 10),
-        square_footage_id: parseInt(document.getElementById('square_footage').value, 10)
-      };
-      
-      if (!formData.client_first_name || !formData.client_last_name || !formData.client_phone || !formData.client_email || !formData.zip_code ||
-        isNaN(formData.hear_about_id) || isNaN(formData.type_location_id) || isNaN(formData.service_type_id) || isNaN(formData.square_footage_id)) {
-        alert('Please fill in all fields');
-        return;
-      }
+      return;
+    }
 
-      //Send POST req
-      try {
-        const response = await fetch('/api/quotes', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(formData)
-        });
+    if (typeof grecaptcha === 'undefined' || !grecaptcha.enterprise) {
+      console.error('reCAPTCHA not loaded');
+      alert('Error: reCAPTCHA is not loaded');
+      return;
+    }
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          //Handling validation errors
-          if (errorData.errors) {
-            const errorMessage = errorData.errors.map(err => {
-              const property = err.property;
-              const constraintMessage = Object.values(err.constraints).join(', ');
-              return `${property}: ${constraintMessage}`;
-            }).join('\n');
+    let token;
+    try {
+      //Getting captcha token
+      token = await grecaptcha.enterprise.execute('6LcjT2UqAAAAAN7pLljhGFmajWVGSE-5XrsGy6zE', { action: 'submit' });
+    } catch (error) {
+      console.error('Error executing reCAPTCHA: ', error);
+      alert('Error executing CAPTCHA. Please try again.');
+      return;
+    }
+    
+    if (!token) {
+      alert('Please complete the CAPTCHA');
+      return;
+    }
 
-            alert(`Validation error: \n${errorMessage}`);
-          } else {
-            throw new Error(`Network response was not ok: ${response.statusText}`);
-          }
+    //Data to send
+    const formData = {
+      client_first_name: document.getElementById('first_name').value.trim(),
+      client_last_name: document.getElementById('last_name').value.trim(),
+      client_phone: document.getElementById('phone').value.trim(),
+      client_email: document.getElementById('email').value.trim(),
+      zip_code: document.getElementById('zip_code').value.trim(),
+      hear_about_id: parseInt(document.getElementById('hear_about').value, 10),
+      type_location_id: parseInt(document.getElementById('type_location').value, 10),
+      service_type_id: parseInt(document.getElementById('service_type').value, 10),
+      square_footage_id: parseInt(document.getElementById('square_footage').value, 10),
+      token: token,
+      userAgent: navigator.userAgent,
+    };
+    
+    if (!formData.client_first_name || !formData.client_last_name || !formData.client_phone || !formData.client_email || !formData.zip_code ||
+      isNaN(formData.hear_about_id) || isNaN(formData.type_location_id) || isNaN(formData.service_type_id) || isNaN(formData.square_footage_id)) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    //Send POST req
+    try {
+      const response = await fetch('/api/quotes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+
+        //Handling validation errors
+        if (errorData.errors) {
+          const errorMessage = errorData.errors.map(err => {
+            const property = err.property;
+            const constraintMessage = Object.values(err.constraints).join(', ');
+            return `${property}: ${constraintMessage}`;
+          }).join('\n');
+
+          alert(`Validation error: \n${errorMessage}`);
         } else {
-          const data = await response.json();
-          //Processing a positive response
-          if (data.success) {
-            alert(data.message);
-          } else {
-            alert('Unknown error. Please try again.');
-          }
+          throw new Error(`Network response was not ok: ${response.statusText}`);
         }
-      } catch (error) {
-        console.error('Error submitting the form: ', error);
-        alert('Error submitting the form');
+      } else {
+        const data = await response.json();
+
+        //Processing a positive response
+        if (data.success) {
+          alert(data.message);
+        } else {
+          alert('Unknown error. Please try again.');
+        }
       }
+    } catch (error) {
+      console.error('Error submitting the form: ', error);
+      alert('Error submitting the form');
     }
   });
 

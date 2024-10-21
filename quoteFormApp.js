@@ -67,8 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <label for="terms">I agree to the terms of service</label>
           </div>
 
-          <div class="g-recaptcha" data-sitekey="6LcjT2UqAAAAAN7pLljhGFmajWVGSE-5XrsGy6zE"></div>
-
           <div class="terms-notice">
             By submitting this form, you are acknowledging you would like to be contacted by Maids and
             Moore at the phone number provided. Maids and Moore may contact you about its services through
@@ -101,27 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (typeof grecaptcha === 'undefined' || !grecaptcha.enterprise) {
-      console.error('reCAPTCHA not loaded');
-      alert('Error: reCAPTCHA is not loaded');
-      return;
-    }
-
-    let token;
-    try {
-      //Getting captcha token
-      token = await grecaptcha.enterprise.execute('6LcjT2UqAAAAAN7pLljhGFmajWVGSE-5XrsGy6zE', { action: 'submit' });
-    } catch (error) {
-      console.error('Error executing reCAPTCHA: ', error);
-      alert('Error executing CAPTCHA. Please try again.');
-      return;
-    }
-    
-    if (!token) {
-      alert('Please complete the CAPTCHA');
-      return;
-    }
-
     //Data to send
     const formData = {
       client_first_name: document.getElementById('first_name').value.trim(),
@@ -133,8 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
       type_location_id: parseInt(document.getElementById('type_location').value, 10),
       service_type_id: parseInt(document.getElementById('service_type').value, 10),
       square_footage_id: parseInt(document.getElementById('square_footage').value, 10),
-      token: token,
-      userAgent: navigator.userAgent,
     };
     
     if (!formData.client_first_name || !formData.client_last_name || !formData.client_phone || !formData.client_email || !formData.zip_code ||
@@ -143,8 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    //Send POST req
     try {
+      const recaptchaToken = await grecaptcha.execute('6Ld-22cqAAAAAGlyWvSKTt2AOomo5ieXAHd4yhRs', { action: 'submit' });
+      formData.recaptcha_token = recaptchaToken;
+
+      //Send POST req
       const response = await fetch('/api/quotes', {
         method: 'POST',
         headers: {

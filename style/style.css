@@ -10,7 +10,6 @@ body {
   font-family: "Poppins", sans-serif;
   font-size: 18px;
   background-color: #f4f4f4;
-  display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
@@ -26,6 +25,7 @@ body {
   max-width: 600px;
   display: flex;
   flex-direction: column;
+  margin: 0 auto;
 }
 
 h2, h3 {
@@ -111,7 +111,7 @@ select:focus {
   color:#fff;
 }
 
-button {
+#submit{
   grid-column: 1 / -1;
   padding: 0.8rem;
   background-color: #ffa500;
@@ -124,13 +124,74 @@ button {
   width: 100%;
 }
 
-button:hover {
+#submit:hover {
   background-color: #fff;
   color: #ffa500;
 }
 
-.g-recaptcha {
-  grid-column: 1 / -1
+.settings-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  cursor: pointer;
+  font-size: 24px;
+  background: rgb(80, 78, 78);
+  border: none;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 40%;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+  overflow: auto;
+  transition: all 0.5s ease;
+}
+
+#buttonColor {
+  color: #333;
+}
+
+.modal-content {
+  background-color: #cfcbcb;
+  position: fixed;
+  top: 0;
+  left: -100%;
+  padding: 20px;
+  border: 1px solid #888;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  width: 30%;
+  height: 100%;
+  justify-content: left;
+  transition: left 0.5s ease;
+}
+
+.modal.active .modal-content {
+  left: 0;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 @media (max-width: 600px) {

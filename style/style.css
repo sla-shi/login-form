@@ -193,17 +193,36 @@ select:focus {
   cursor: pointer;
 }
 
+.settingsButtons {
+  display: flex;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
 #applySettings {
   grid-column: 1 / -1;
   padding: 0.8rem;
-  background-color: #ffa500;
+  background-color: #c79944;
   color: #fff;
   border: none;
   border-radius: 24px;
   font-size: 1.2rem;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
-  width: 50%;
+  width: 30%;
+  display: block;
+}
+
+#resetSettings {
+  grid-column: 1 / -1;
+  padding: 0.8rem;
+  background-color: #c79944;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  width: 30%;
+  display: block;
 }
 
 @media (max-width: 600px) {

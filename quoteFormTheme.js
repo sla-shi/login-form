@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', function () {
           <option value="right">Right</option>
       </select><br><br>
 
+      <label for="fieldBorderRadius">Field border radius:</label>
+      <input type="range" id="fieldBorderRadius" min="0" max="20" value="0"><br><br>
+
       <div class="settingsButtons">
         <button id="applySettings">Save</button>
         <button id="resetSettings">Reset</button>
@@ -33,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const formColorInput = document.getElementById('formColor');
   const buttonColorInput = document.getElementById('buttonColor');
   const formPositionSelect = document.getElementById('formPosition');
+  const fieldBorderRadiusInput = document.getElementById('fieldBorderRadius');
 
   //Show modal window
   settingsBtn.onclick = function () {
@@ -60,14 +64,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const formColor = formColorInput.value;
     const buttonColor = buttonColorInput.value;
     const formPosition = formPositionSelect.value;
+    const fieldBorderRadius = fieldBorderRadiusInput.value;
 
     if (formColor) localStorage.setItem('formColor', formColor);
     if (buttonColor) localStorage.setItem('buttonColor', buttonColor);
     if (formPosition) localStorage.setItem('formPosition', formPosition);
+    if (fieldBorderRadius) localStorage.setItem('fieldBorderRadius', fieldBorderRadius);
 
     document.querySelector('.form-fields').style.backgroundColor = formColor;
     document.querySelector('#submit').style.backgroundColor = buttonColor;
+
     setFormPosition(formPosition);
+    applyBorderRadius(fieldBorderRadius);
 
     modal.classList.remove('active');
     setTimeout(() => modal.style.display = "none", 500);
@@ -81,12 +89,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const savedFormColor = localStorage.getItem('formColor') || initialStyles.formBackgroundColor;
     const savedButtonColor = localStorage.getItem('buttonColor') || initialStyles.buttonBackgroundColor;
     const savedFormPosition = localStorage.getItem('formPosition') || 'center';
-    
+    const savedFieldBorderRadius = localStorage.getItem('fieldBorderRadius') || 0;
+
     document.querySelector('.form-fields').style.backgroundColor = savedFormColor;
+    document.querySelector('#submit').style.backgroundColor = savedButtonColor;
     setFormPosition(savedFormPosition);
+    applyBorderRadius(savedFieldBorderRadius || 0);
 
     applyTheme({
-      initialStyles,
+      ...initialStyles,
       buttonBackgroundColor: savedButtonColor,
       formBackgroundColor: savedFormColor
     });
@@ -94,12 +105,20 @@ document.addEventListener('DOMContentLoaded', function () {
     formColorInput.value = savedFormColor;
     buttonColorInput.value = savedButtonColor;
     formPositionSelect.value = savedFormPosition;
+    fieldBorderRadiusInput.value = savedFieldBorderRadius;
   }
 
   function setFormPosition(position) {
     const form = document.querySelector('.form-fields');
     form.style.marginLeft = position === 'left' ? '0' : 'auto';
     form.style.marginRight = position === 'right' ? '0' : 'auto';
+  }
+
+  function applyBorderRadius(radius) {
+    const fields = document.querySelectorAll('input, select, textarea');
+    fields.forEach(field => {
+      field.style.borderRadius = `${radius}px`;
+    })
   }
 
   function resetSettings() {
@@ -109,16 +128,21 @@ document.addEventListener('DOMContentLoaded', function () {
     localStorage.removeItem('formColor');
     localStorage.removeItem('buttonColor');
     localStorage.removeItem('formPosition');
+    localStorage.removeItem('fieldBorderRadius');
 
     // //Reset form style to initial state
     document.querySelector('.form-fields').style.backgroundColor = initialStyles.formBackgroundColor;
     document.querySelector('#submit').style.backgroundColor = initialStyles.buttonBackgroundColor;
+
     setFormPosition('center');
+    applyBorderRadius(0);
 
     formColorInput.value = initialStyles.formBackgroundColor;
     buttonColorInput.value = initialStyles.buttonBackgroundColor;
     formPositionSelect.value = 'center';
+    fieldBorderRadiusInput.value = 0;
 
+    //Apply initial styles to the entire form to update all elements and styles ro match the theme
     applyTheme(initialStyles);
   }
 

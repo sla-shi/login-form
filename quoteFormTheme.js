@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <label for="formColor">Color of the form:</label>
     <input type="color" id="formColor"><br><br>
 
-    <label for="buttonColor">color of buttons:</label>
+    <label for="buttonColor">Color of buttons:</label>
     <input type="color" id="buttonColor"><br><br>
 
     <label for="formPosition">Form position:</label>
@@ -75,22 +75,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
   //Function to load settings from localStore
   function loadSettings() {
-    const savedFormColor = localStorage.getItem('formColor');
-    const savedButtonColor = localStorage.getItem('buttonColor');
-    const savedFormPosition = localStorage.getItem('formPosition');
-
     const currentTheme = getQueryParameter('theme') || 'light';
     const initialStyles = themes[currentTheme];
-
-    // Apply saved values to settings form fields
-    if (savedFormColor) document.querySelector('.form-fields').style.backgroundColor = savedFormColor;
-    else document.querySelector('.form-fields').style.backgroundColor = initialStyles.formBackgroundColor;
     
-    if (savedButtonColor) document.querySelector('#submit').style.backgroundColor = savedButtonColor;
-    else document.querySelector('#submit').style.backgroundColor = initialStyles.buttonBackgroundColor;
+    const savedFormColor = localStorage.getItem('formColor') || initialStyles.formBackgroundColor;
+    const savedButtonColor = localStorage.getItem('buttonColor') || initialStyles.buttonBackgroundColor;
+    const savedFormPosition = localStorage.getItem('formPosition') || 'center';
+    
+    document.querySelector('.form-fields').style.backgroundColor = savedFormColor;
+    setFormPosition(savedFormPosition);
 
-    const position = savedFormPosition || 'center';
-    setFormPosition(position);
+    applyTheme({
+      initialStyles,
+      buttonBackgroundColor: savedButtonColor,
+      formBackgroundColor: savedFormColor
+    });
+
+    formColorInput.value = savedFormColor;
+    buttonColorInput.value = savedButtonColor;
+    formPositionSelect.value = savedFormPosition;
   }
 
   function setFormPosition(position) {
@@ -115,6 +118,8 @@ document.addEventListener('DOMContentLoaded', function () {
     formColorInput.value = initialStyles.formBackgroundColor;
     buttonColorInput.value = initialStyles.buttonBackgroundColor;
     formPositionSelect.value = 'center';
+
+    applyTheme(initialStyles);
   }
 
   resetSettingsButton.onclick = function () {
@@ -157,16 +162,19 @@ const themes = {
     if (form && theme) {
       form.style.backgroundColor = theme.formBackgroundColor;
       form.style.color = theme.textColor;
-      button.style.backgroundColor = theme.buttonBackgroundColor;
+      button.style.backgroundColor = localStorage.getItem('buttonColor') || theme.buttonBackgroundColor;
       button.style.color = theme.buttonTextColor;
 
+      const buttonHoverBackgroundColor = localStorage.getItem('buttonHoverBackgroundColor') || theme.buttonHoverBackgroundColor;
+      const buttonHoverTextColor = localStorage.getItem('buttonHoverTextColor') || theme.buttonHoverTextColor;
+
       button.addEventListener('mouseover', () => {
-        button.style.backgroundColor = theme.buttonHoverBackgroundColor;
-        button.style.color = theme.buttonHoverTextColor;
+        button.style.backgroundColor = buttonHoverBackgroundColor;
+        button.style.color = buttonHoverTextColor;
       });
 
       button.addEventListener('mouseout', () => {
-        button.style.backgroundColor = theme.buttonBackgroundColor;
+        button.style.backgroundColor = localStorage.getItem('buttonColor') || theme.buttonBackgroundColor;
         button.style.color = theme.buttonTextColor;
       });
 

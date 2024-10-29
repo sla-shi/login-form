@@ -77,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </form>
     </div>
-    <button class="settings-icon" id="settingsBtn">⚙️</button>
   </div>`;
   
   var quoteFormContainer = document.getElementById('quoteForm');

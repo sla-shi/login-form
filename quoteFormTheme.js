@@ -1,158 +1,3 @@
-document.addEventListener('DOMContentLoaded', function () {
-  const modalHTML = `
-  <div class="modal-content">
-    <span class="close" id="closeModal">&times;</span>
-    <h2>Form customization settings</h2>
-
-    <label for="formColor">Color of the form:</label>
-    <input type="color" id="formColor"><br><br>
-
-    <label for="buttonColor">Color of buttons:</label>
-    <input type="color" id="buttonColor"><br><br>
-
-    <label for="formPosition">Form position:</label>
-      <select id="formPosition">
-          <option value="left">Left</option>
-          <option value="center">Center</option>
-          <option value="right">Right</option>
-      </select><br><br>
-
-      <label for="fieldBorderRadius">Field border radius:</label>
-      <input type="range" id="fieldBorderRadius" min="0" max="20" value="0"><br><br>
-
-      <div class="settingsButtons">
-        <button id="applySettings">Save</button>
-        <button id="resetSettings">Reset</button>
-      </div>
-  </div>`;
-
-  document.getElementById('settingsModal').innerHTML = modalHTML;
-
-  const settingsBtn = document.getElementById('settingsBtn');
-  const modal = document.getElementById('settingsModal');
-  const closeModal = document.getElementById('closeModal');
-  const applySettingsButton = document.getElementById('applySettings');
-  const resetSettingsButton = document.getElementById('resetSettings');
-  const formColorInput = document.getElementById('formColor');
-  const buttonColorInput = document.getElementById('buttonColor');
-  const formPositionSelect = document.getElementById('formPosition');
-  const fieldBorderRadiusInput = document.getElementById('fieldBorderRadius');
-
-  //Show modal window
-  settingsBtn.onclick = function () {
-    modal.style.display = "block";
-    setTimeout(() => modal.classList.add('active'), 10);
-    //Load saved settings if any
-    loadSettings();
-  }
-
-  closeModal.onclick = function () {
-    modal.classList.remove('active');
-    setTimeout(() => modal.style.display = "none", 500);
-  }
-
-  //Close window when clicking outside modal window
-  window.onclick = function (event) {
-    if (event.target == modal) {
-      modal.classList.remove('active');
-      setTimeout(() => modal.style.display = "none", 500)
-    }
-  }
-
-  //Apply settings on click "Save"
-  applySettingsButton.onclick = function () {
-    const formColor = formColorInput.value;
-    const buttonColor = buttonColorInput.value;
-    const formPosition = formPositionSelect.value;
-    const fieldBorderRadius = fieldBorderRadiusInput.value;
-
-    if (formColor) localStorage.setItem('formColor', formColor);
-    if (buttonColor) localStorage.setItem('buttonColor', buttonColor);
-    if (formPosition) localStorage.setItem('formPosition', formPosition);
-    if (fieldBorderRadius) localStorage.setItem('fieldBorderRadius', fieldBorderRadius);
-
-    document.querySelector('.form-fields').style.backgroundColor = formColor;
-    document.querySelector('#submit').style.backgroundColor = buttonColor;
-
-    setFormPosition(formPosition);
-    applyBorderRadius(fieldBorderRadius);
-
-    modal.classList.remove('active');
-    setTimeout(() => modal.style.display = "none", 500);
-  }
-
-  //Function to load settings from localStore
-  function loadSettings() {
-    const currentTheme = getQueryParameter('theme') || 'light';
-    const initialStyles = themes[currentTheme];
-    
-    const savedFormColor = localStorage.getItem('formColor') || initialStyles.formBackgroundColor;
-    const savedButtonColor = localStorage.getItem('buttonColor') || initialStyles.buttonBackgroundColor;
-    const savedFormPosition = localStorage.getItem('formPosition') || 'center';
-    const savedFieldBorderRadius = localStorage.getItem('fieldBorderRadius') || 0;
-
-    document.querySelector('.form-fields').style.backgroundColor = savedFormColor;
-    document.querySelector('#submit').style.backgroundColor = savedButtonColor;
-    setFormPosition(savedFormPosition);
-    applyBorderRadius(savedFieldBorderRadius || 0);
-
-    applyTheme({
-      ...initialStyles,
-      buttonBackgroundColor: savedButtonColor,
-      formBackgroundColor: savedFormColor
-    });
-
-    formColorInput.value = savedFormColor;
-    buttonColorInput.value = savedButtonColor;
-    formPositionSelect.value = savedFormPosition;
-    fieldBorderRadiusInput.value = savedFieldBorderRadius;
-  }
-
-  function setFormPosition(position) {
-    const form = document.querySelector('.form-fields');
-    form.style.marginLeft = position === 'left' ? '0' : 'auto';
-    form.style.marginRight = position === 'right' ? '0' : 'auto';
-  }
-
-  function applyBorderRadius(radius) {
-    const fields = document.querySelectorAll('input, select, textarea');
-    fields.forEach(field => {
-      field.style.borderRadius = `${radius}px`;
-    })
-  }
-
-  function resetSettings() {
-    const currentTheme = getQueryParameter('theme') || 'light';
-    const initialStyles = themes[currentTheme];
-
-    localStorage.removeItem('formColor');
-    localStorage.removeItem('buttonColor');
-    localStorage.removeItem('formPosition');
-    localStorage.removeItem('fieldBorderRadius');
-
-    // //Reset form style to initial state
-    document.querySelector('.form-fields').style.backgroundColor = initialStyles.formBackgroundColor;
-    document.querySelector('#submit').style.backgroundColor = initialStyles.buttonBackgroundColor;
-
-    setFormPosition('center');
-    applyBorderRadius(0);
-
-    formColorInput.value = initialStyles.formBackgroundColor;
-    buttonColorInput.value = initialStyles.buttonBackgroundColor;
-    formPositionSelect.value = 'center';
-    fieldBorderRadiusInput.value = 0;
-
-    //Apply initial styles to the entire form to update all elements and styles ro match the theme
-    applyTheme(initialStyles);
-  }
-
-  resetSettingsButton.onclick = function () {
-    resetSettings();
-  }
-
-  loadSettings();
-});
-
 const themes = {
     light: {
       bodyBackgroundColor: '#fff',
@@ -162,7 +7,7 @@ const themes = {
       buttonTextColor: '#fff',
       buttonHoverBackgroundColor: '#fff',
       buttonHoverTextColor: '#ff9800',
-      fieldBorderColor: '#007bff'
+      fieldBorderColor: '0'
     },
     dark: {
       bodyBackgroundColor: '#121212',
@@ -186,11 +31,11 @@ const themes = {
     if (form && theme) {
       form.style.backgroundColor = theme.formBackgroundColor;
       form.style.color = theme.textColor;
-      button.style.backgroundColor = localStorage.getItem('buttonColor') || theme.buttonBackgroundColor;
+      button.style.backgroundColor = theme.buttonBackgroundColor;
       button.style.color = theme.buttonTextColor;
 
-      const buttonHoverBackgroundColor = localStorage.getItem('buttonHoverBackgroundColor') || theme.buttonHoverBackgroundColor;
-      const buttonHoverTextColor = localStorage.getItem('buttonHoverTextColor') || theme.buttonHoverTextColor;
+      const buttonHoverBackgroundColor = theme.buttonHoverBackgroundColor;
+      const buttonHoverTextColor = theme.buttonHoverTextColor;
 
       button.addEventListener('mouseover', () => {
         button.style.backgroundColor = buttonHoverBackgroundColor;
@@ -198,7 +43,7 @@ const themes = {
       });
 
       button.addEventListener('mouseout', () => {
-        button.style.backgroundColor = localStorage.getItem('buttonColor') || theme.buttonBackgroundColor;
+        button.style.backgroundColor = theme.buttonBackgroundColor;
         button.style.color = theme.buttonTextColor;
       });
 
@@ -206,13 +51,13 @@ const themes = {
         field.style.borderColor = theme.fieldBorderColor;
         field.style.color = theme.textColor;
 
-        // fields.addEventListener('mouseover', () => {
-        //   fields.style.borderColor = theme.fieldBorderColor;
-        // });
+        field.addEventListener('mouseover', () => {
+          field.style.borderColor = theme.fieldBorderColor;
+        });
 
-        // fields.addEventListener('mouseout', () => {
-        //   fields.style.borderColor = theme.fieldBorderColor;
-        // });
+        field.addEventListener('mouseout', () => {
+          field.style.borderColor = theme.fieldBorderColor;
+        });
       });
     }
   }

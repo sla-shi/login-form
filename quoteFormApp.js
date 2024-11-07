@@ -124,11 +124,30 @@ document.addEventListener('DOMContentLoaded', () => {
       const recaptchaToken = await grecaptcha.execute('6Ld-22cqAAAAAGlyWvSKTt2AOomo5ieXAHd4yhRs', { action: 'submit' });
       formData.recaptcha_token = recaptchaToken;
 
-      //Send POST req
-      const response = await fetch('/api/quotes', {
+      const secretKey = localStorage.getItem('SECRET_KEY');
+
+      const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+          body: `secret=${secretKey}&response=${recaptchaToken}`
+        });
+
+      const recaptchaData = await recaptchaResponse.json();
+
+      if (!recaptchaData.success || recaptchaData.score < 0.5) {
+        alert('Failed reCAPTCHA verification');
+        return;
+      }
+
+      //Send POST req
+      const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'tcs-auth-token': localStorage.getItem('API_TOKEN'),
+          'tcs-account-sid': localStorage.getItem('API_SID')
         },
         body: JSON.stringify(formData)
       });
@@ -153,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         //Processing a positive response
         if (data.success) {
-          alert(data.message);
+          alert(data.message || 'From submitted successfully');
         } else {
           alert('Unknown error. Please try again.');
         }
@@ -166,9 +185,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Function for getting data from api
   async function fetchInitFormData() {
-    try {
-      const response = await fetch('/api/quotes/init-form');
 
+    if (!apiSid || !apiToken) {
+      alert('API keys are missing in localStorage');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes/init-form', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'tcs-auth-token': localStorage.getItem('API_TOKEN'),
+          'tcs-account-sid': localStorage.getItem('API_SID')
+        }
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch from data');
       }

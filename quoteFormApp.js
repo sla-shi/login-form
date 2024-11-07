@@ -186,11 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Function for getting data from api
   async function fetchInitFormData() {
 
-    if (!apiSid || !apiToken) {
-      alert('API keys are missing in localStorage');
-      return;
-    }
-
     try {
       const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes/init-form', {
         method: 'GET',

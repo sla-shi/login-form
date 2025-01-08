@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
           'Content-Type': 'application/json',
           'tcs-auth-token': localStorage.getItem('API_TOKEN'),
           'tcs-account-sid': localStorage.getItem('API_SID'),
-          'recaptcha-token': recaptchaToken
+          'tcs-recaptcha-token': recaptchaToken
         }
       });
       if (!response.ok) {

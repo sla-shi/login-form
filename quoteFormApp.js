@@ -128,13 +128,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      const recaptchaToken = await grecaptcha.execute('6Le040AqAAAAANpuTZ9SlXSOO78-AYfUs0AyyYjI', { action: 'submit' });
+      
+      if (!recaptchaToken) {
+      console.error('Failed to get reCAPTCHA token.');
+      return;
+      }
+      
       //Send POST req
       const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes',{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'tcs-auth-token': localStorage.getItem('API_TOKEN'),
-          'tcs-account-sid': localStorage.getItem('API_SID')
+          'tcs-account-sid': localStorage.getItem('API_SID'),
+          'tcs-recaptcha-token': recaptchaToken
         },
         body: JSON.stringify(formData)
       });
@@ -187,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const recaptchaToken = await grecaptcha.execute('6Le040AqAAAAANpuTZ9SlXSOO78-AYfUs0AyyYjI', { action: 'submit' });
-      
+
       if (!recaptchaToken) {
       console.error('Failed to get reCAPTCHA token.');
       return;

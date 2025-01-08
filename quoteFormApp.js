@@ -89,7 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  fetchInitFormData();
+  if (typeof grecaptcha !== 'undefined') {
+    grecaptcha.ready(() => {
+      console.log('reCaptcha is ready.');
+      fetchInitFormData();
+    });
+  } else {
+    console.error('reCaptcha library is not loaded.');
+  }
 
   document.getElementById('quoteForm').addEventListener('submit', async function (event) {
     event.preventDefault();
@@ -121,26 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const recaptchaToken = await grecaptcha.execute('6Ld-22cqAAAAAGlyWvSKTt2AOomo5ieXAHd4yhRs', { action: 'submit' });
-      formData.recaptcha_token = recaptchaToken;
-
-      const secretKey = localStorage.getItem('SECRET_KEY');
-
-      const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-          body: `secret=${secretKey}&response=${recaptchaToken}`
-        });
-
-      const recaptchaData = await recaptchaResponse.json();
-
-      if (!recaptchaData.success || recaptchaData.score < 0.5) {
-        alert('Failed reCAPTCHA verification');
-        return;
-      }
-
       //Send POST req
       const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes',{
         method: 'POST',
@@ -183,16 +170,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function onReCaptchaLoad() {
+    console.log('reCaptcha script has been loaded.');
+
+    if (typeof grecaptcha !== 'undefined') {
+      grecaptcha.ready(() => {
+        console.log('reCaptcha is ready to use.');
+      });
+    } else {
+      console.error('reCaptcha not loaded');
+    }
+  }
+
   // Function for getting data from api
   async function fetchInitFormData() {
 
     try {
+      const recaptchaToken = await grecaptcha.execute('6Le040AqAAAAANpuTZ9SlXSOO78-AYfUs0AyyYjI', { action: 'submit' });
+      
+      if (!recaptchaToken) {
+      console.error('Failed to get reCAPTCHA token.');
+      return;
+    }
+
       const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes/init-form', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'tcs-auth-token': localStorage.getItem('API_TOKEN'),
-          'tcs-account-sid': localStorage.getItem('API_SID')
+          'tcs-account-sid': localStorage.getItem('API_SID'),
+          'recaptcha-token': recaptchaToken
         }
       });
       if (!response.ok) {
@@ -209,6 +216,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch(error) {
       console.log('Error fetching init from data: ', error);
+    }
+  }
+
+  window.onload = function () {
+    if (typeof grecaptcha !== 'undefined') {
+      grecaptcha.ready(onReCaptchaLoad);
+    } else {
+      console.error('reCaptcha not loaded');
     }
   }
   

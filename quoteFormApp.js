@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
               
           <div>
-            <label for="range_limit" class="required-label">Square Footage:</label>
-            <select name="range_limit" id="range_limit" required>
+            <label for="square_footage" class="required-label">Square Footage:</label>
+            <select name="square_footage" id="square_footage" required>
               <option value="">--Select square footage--</option>
             </select>
           </div>
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hear_about_id: parseInt(document.getElementById('hear_about').value, 10),
       type_location_id: parseInt(document.getElementById('type_location').value, 10),
       service_type_id: parseInt(document.getElementById('service_type').value, 10),
-      range_limit: parseInt(document.getElementById('range_limit').value, 10),
+      range_limit: parseInt(document.getElementById('square_footage').value, 10),
     };
     
     if (!formData.client_first_name || !formData.client_last_name || !formData.client_phone || !formData.client_email || !formData.zip_code ||
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //Function for dynamically filling form fields
   function populateForm(data) {
     const serviceTypeSelect = document.getElementById('service_type');
-    const rangeLimitSelect = document.getElementById('range_limit');
+    const squareFootageSelect = document.getElementById('square_footage');
     const hearAboutSelect = document.getElementById('hear_about');
     const typeLocationSelect = document.getElementById('type_location');
 
@@ -252,12 +252,12 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
       
-    if (rangeLimitSelect && data.range_limits) {
-      data.range_limits.forEach(range => {
+    if (squareFootageSelect && data.square_footages) {
+      data.square_footages.forEach(range => {
         const option = document.createElement('option');
         option.value = range.id;
         option.textContent = range.rage_limit;
-        rangeLimitSelect.appendChild(option);
+        squareFootageSelect.appendChild(option);
       });
     }
 

@@ -118,11 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
       hear_about_id: parseInt(document.getElementById('hear_about').value, 10),
       type_location_id: parseInt(document.getElementById('type_location').value, 10),
       service_type_id: parseInt(document.getElementById('service_type').value, 10),
-      range_limit: parseInt(document.getElementById('square_footage').value, 10),
+      square_footage_id: parseInt(document.getElementById('square_footage').value, 10),
     };
     
     if (!formData.client_first_name || !formData.client_last_name || !formData.client_phone || !formData.client_email || !formData.zip_code ||
-      isNaN(formData.hear_about_id) || isNaN(formData.type_location_id) || isNaN(formData.service_type_id) || isNaN(formData.range_limit)) {
+      isNaN(formData.hear_about_id) || isNaN(formData.type_location_id) || isNaN(formData.service_type_id) || isNaN(formData.square_footage_id)) {
       alert('Please fill in all fields');
       return;
     }
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
       data.square_footages.forEach(range => {
         const option = document.createElement('option');
         option.value = range.id;
-        option.textContent = range.rage_limit;
+        option.textContent = range.range_limit;
         squareFootageSelect.appendChild(option);
       });
     }

@@ -1,6 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   var formHTML = `
+  <div id="loader" style="display: flex;">
+    <div id="spinner"></div>
+  </div>
+
   <div class="form-fields">
     <h2>30-second Quote</h2>
     <h3>Save instant 10%, receive instant email</h3>
@@ -184,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof grecaptcha !== 'undefined') {
       grecaptcha.ready(() => {
         console.log('reCaptcha is ready to use.');
+        document.getElementById('loader').style.display = 'none';
       });
     } else {
       console.error('reCaptcha not loaded');

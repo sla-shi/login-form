@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof grecaptcha !== 'undefined') {
       grecaptcha.ready(() => {
         console.log('reCaptcha is ready to use.');
-        document.getElementById('loader').style.display = 'none';
+        fetchInitFormData();
       });
     } else {
       console.error('reCaptcha not loaded');
@@ -197,8 +197,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Function for getting data from api
   async function fetchInitFormData() {
-
     try {
+      const loader = document.getElementById('loader');
+      if (loader) {
+        loader.style.display = 'flex';
+      }
+      
       const recaptchaToken = await grecaptcha.execute('6Le040AqAAAAANpuTZ9SlXSOO78-AYfUs0AyyYjI', { action: 'submit' });
 
       if (!recaptchaToken) {
@@ -229,6 +233,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch(error) {
       console.log('Error fetching init from data: ', error);
+    } finally {
+      const loader = document.getElementById('loader');
+      if (loader) {
+        loader.style.display = 'none';
+      }
     }
   }
 

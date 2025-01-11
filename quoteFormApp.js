@@ -83,7 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>`;
   
-  var quoteFormContainer = document.getElementById('quoteForm');
+  const quoteFormContainer = document.getElementById('quoteForm');
+  const termsCheckbox = document.getElementById('terms'); 
   if (quoteFormContainer) {
     quoteFormContainer.innerHTML = formHTML;
 
@@ -93,153 +94,82 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  //Universal function for getting field values
+  const getFormFieldValue = (id, parseFn = val => val.trim()) =>
+    parseFn(document.getElementById(id)?.value || '');
+
+  const validateFormData = formData => {
+    const requiredFields = [
+      'client_first_name',
+      'client_last_name',
+      'client_phone',
+      'client_email',
+      'zip_code',
+      'hear_about_id',
+      'type_location_id',
+      'service_type_id',
+      'square_footage_id',
+    ];
+
+    for (const field of requiredFields) {
+      if (formData[field] === '' || (typeof formData[field] === 'number' && isNaN(formData[field]))) {
+        return `Please fill in all fields correctly. Missing: ${field}`;
+      }
+    }
+
+    if (!termsCheckbox.checked) {
+      return 'Please agree to the terms of service before submitting.';
+    }
+
+    return null;
+  }
+
+  const handleErrors = error => {
+    console.error('Error: ', error);
+    alert(error.message || 'An error occurred. Pleas try again');
+  };
+
   if (typeof grecaptcha !== 'undefined') {
     grecaptcha.ready(() => {
-      console.log('reCaptcha is ready.');
       fetchInitFormData();
     });
   } else {
     console.error('reCaptcha library is not loaded.');
   }
 
-  document.getElementById('quoteForm').addEventListener('submit', async function (event) {
+  quoteFormContainer.addEventListener('submit', async function (event) {
     event.preventDefault();
-
-    const termsCheckbox = document.getElementById('terms');
-
-    if (!termsCheckbox.checked) {
-      alert('Please agree to the terms of service before submitting');
-      return;
-    }
 
     //Data to send
     const formData = {
-      client_first_name: document.getElementById('first_name').value.trim(),
-      client_last_name: document.getElementById('last_name').value.trim(),
-      client_phone: document.getElementById('phone').value.trim(),
-      client_email: document.getElementById('email').value.trim(),
-      zip_code: document.getElementById('zip_code').value.trim(),
-      hear_about_id: parseInt(document.getElementById('hear_about').value, 10),
-      type_location_id: parseInt(document.getElementById('type_location').value, 10),
-      service_type_id: parseInt(document.getElementById('service_type').value, 10),
-      square_footage_id: parseInt(document.getElementById('square_footage').value, 10),
+      client_first_name: getFormFieldValue('first_name'),
+      client_last_name: getFormFieldValue('last_name'),
+      client_phone: getFormFieldValue('phone'),
+      client_email: getFormFieldValue('email'),
+      zip_code: getFormFieldValue('zip_code'),
+      hear_about_id: getFormFieldValue('hear_about', val => parseInt(val, 10)),
+      type_location_id: getFormFieldValue('type_location', val => parseInt(val, 10)),
+      service_type_id: getFormFieldValue('service_type', val => parseInt(val, 10)),
+      square_footage_id: getFormFieldValue('square_footage', val => parseInt(val, 10)),
     };
-    
-    if (!formData.client_first_name || !formData.client_last_name || !formData.client_phone || !formData.client_email || !formData.zip_code ||
-      isNaN(formData.hear_about_id) || isNaN(formData.type_location_id) || isNaN(formData.service_type_id) || isNaN(formData.square_footage_id)) {
-      alert('Please fill in all fields');
+
+    const validationError = validateFormData(formData);
+    if (validationError) {
+      alert(validationError);
       return;
     }
 
     try {
-      const recaptchaToken = await grecaptcha.execute('6Le040AqAAAAANpuTZ9SlXSOO78-AYfUs0AyyYjI', { action: 'submit' });
-      
-      if (!recaptchaToken) {
-      console.error('Failed to get reCAPTCHA token.');
-      return;
-      }
-      
-      //Send POST req
-      const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes',{
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'tcs-auth-token': localStorage.getItem('API_TOKEN'),
-          'tcs-account-sid': localStorage.getItem('API_SID'),
-          'tcs-recaptcha-token': recaptchaToken
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-
-        //Handling validation errors
-        if (errorData.errors) {
-          const errorMessage = errorData.errors.map(err => {
-            const property = err.property;
-            const constraintMessage = Object.values(err.constraints).join(', ');
-            return `${property}: ${constraintMessage}`;
-          }).join('\n');
-
-          alert(`Validation error: \n${errorMessage}`);
-        } else {
-          throw new Error(`Network response was not ok: ${response.statusText}`);
-        }
+      const result = await submitForm(formData);
+      if (result.success) {
+        alert(result.message || 'Form submitted successfully');
       } else {
-        const data = await response.json();
-
-        //Processing a positive response
-        if (data.success) {
-          alert(data.message || 'From submitted successfully');
-        } else {
-          alert('Unknown error. Please try again.');
-        }
+        alert('Unknown error. Please try again');
       }
     } catch (error) {
-      console.error('Error submitting the form: ', error);
-      alert('Error submitting the form');
+      handleErrors(error);
     }
   });
-
-  function onReCaptchaLoad() {
-    console.log('reCaptcha script has been loaded.');
-
-    if (typeof grecaptcha !== 'undefined') {
-      grecaptcha.ready(() => {
-        console.log('reCaptcha is ready to use.');
-        fetchInitFormData();
-      });
-    } else {
-      console.error('reCaptcha not loaded');
-    }
-  }
-
-  // Function for getting data from api
-  async function fetchInitFormData() {
-    try {
-      const loader = document.getElementById('loader');
-      if (loader) {
-        loader.style.display = 'flex';
-      }
-      
-      const recaptchaToken = await grecaptcha.execute('6Le040AqAAAAANpuTZ9SlXSOO78-AYfUs0AyyYjI', { action: 'submit' });
-
-      if (!recaptchaToken) {
-      console.error('Failed to get reCAPTCHA token.');
-      return;
-    }
-
-      const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes/init-form', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'tcs-auth-token': localStorage.getItem('API_TOKEN'),
-          'tcs-account-sid': localStorage.getItem('API_SID'),
-          'tcs-recaptcha-token': recaptchaToken
-        }
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch from data');
-      }
-
-      const data = await response.json();
-
-      //Checking the data structure and filling out the form
-      if (data && data.data) {
-        populateForm(data.data);
-      } else {
-        console.error('Invalid data structure from server');
-      }
-    } catch(error) {
-      console.log('Error fetching init from data: ', error);
-    } finally {
-      const loader = document.getElementById('loader');
-      if (loader) {
-        loader.style.display = 'none';
-      }
-    }
-  }
 
   window.onload = function () {
     if (typeof grecaptcha !== 'undefined') {
@@ -248,49 +178,122 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('reCaptcha not loaded');
     }
   }
-  
-  //Function for dynamically filling form fields
-  function populateForm(data) {
-    const serviceTypeSelect = document.getElementById('service_type');
-    const squareFootageSelect = document.getElementById('square_footage');
-    const hearAboutSelect = document.getElementById('hear_about');
-    const typeLocationSelect = document.getElementById('type_location');
+});
 
-    if (serviceTypeSelect && data.services) {
-      //Filling services
-      data.services.forEach(service => {
-        const option = document.createElement('option');
-        option.value = service.id;
-        option.textContent = service.name;
-        serviceTypeSelect.appendChild(option);
-      });
+async function submitForm(formData) {
+  try {
+    const recaptchaToken = await grecaptcha.execute('6Le040AqAAAAANpuTZ9SlXSOO78-AYfUs0AyyYjI', { action: 'submit' });
+    
+    if (!recaptchaToken) {
+      console.error('Failed to get reCAPTCHA token.');
+      return;
     }
-      
-    if (squareFootageSelect && data.square_footages) {
-      data.square_footages.forEach(range => {
-        const option = document.createElement('option');
-        option.value = range.id;
-        option.textContent = range.range_limit;
-        squareFootageSelect.appendChild(option);
-      });
+    
+    //Send POST req
+    const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes',{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'tcs-auth-token': localStorage.getItem('API_TOKEN'),
+        'tcs-account-sid': localStorage.getItem('API_SID'),
+        'tcs-recaptcha-token': recaptchaToken
+      },
+      body: JSON.stringify(formData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+
+      if (errorData.errors) {
+        const errorMessage = errorData.errors
+          .map(err => `${err.property}: ${Object.values(err.constraints).join(', ')}`)
+          .join('\n');
+        throw new Error(`Validation error:\n${errorMessage}`);
+      }
+
+      throw new Error(`Network response was not ok: ${response.statusText}`);
     }
 
-    if (hearAboutSelect && data.hear_about_types) {
-      data.hear_about_types.forEach(hearAbout => {
-        const option = document.createElement('option');
-        option.value = hearAbout.id;
-        option.textContent = hearAbout.name;
-        hearAboutSelect.appendChild(option);
-      });
+    return await response.json();
+  } catch (error) {
+    throw new Error(error.message || 'An error occurred during form submission.');
+  }
+}
+
+function onReCaptchaLoad() {
+  if (typeof grecaptcha !== 'undefined') {
+    grecaptcha.ready(() => {
+      fetchInitFormData();
+    });
+  } else {
+    console.error('reCaptcha not loaded');
+  }
+}
+
+// Function for getting data from api
+async function fetchInitFormData() {
+  try {
+    const loader = document.getElementById('loader');
+    if (loader) {
+      loader.style.display = 'flex';
     }
 
-    if (typeLocationSelect && data.locations) {
-      data.locations.forEach(location => {
-        const option = document.createElement('option');
-        option.value = location.id;
-        option.textContent = location.name;
-        typeLocationSelect.appendChild(option);
-      });
+    const recaptchaToken = await grecaptcha.execute('6Le040AqAAAAANpuTZ9SlXSOO78-AYfUs0AyyYjI', { action: 'submit' });
+
+    if (!recaptchaToken) {
+      console.error('Failed to get reCAPTCHA token.');
+      return;
+    }
+
+    const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes/init-form', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'tcs-auth-token': localStorage.getItem('API_TOKEN'),
+        'tcs-account-sid': localStorage.getItem('API_SID'),
+        'tcs-recaptcha-token': recaptchaToken
+      }
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch from data');
+    }
+
+    const data = await response.json();
+
+    //Checking the data structure and filling out the form
+    if (data && data.data) {
+      populateForm(data.data);
+    } else {
+      console.error('Invalid data structure from server');
+    }
+  } catch(error) {
+    console.log('Error fetching init from data: ', error);
+  } finally {
+    const loader = document.getElementById('loader');
+    if (loader) {
+      loader.style.display = 'none';
     }
   }
-});
+}
+  
+//Function for dynamically filling form fields
+function populateForm(data) {
+  const populateSelect = (selectId, items, valueKey, textKey) => {
+    const selectElement = document.getElementById(selectId);
+    if (!selectElement || !items) return;
+
+    selectElement.innerHTML = '';
+
+    items.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item[valueKey];
+      option.textContent = item[textKey];
+      selectElement.appendChild(option);
+    });
+  };
+
+  populateSelect('service_type', data.services, 'id', 'name');
+  populateSelect('square_footage', data.square_footages, 'id', 'range_limit');
+  populateSelect('hear_about', data.hear_about_types, 'id', 'name');
+  populateSelect('type_location', data.locations, 'id', 'name');
+}

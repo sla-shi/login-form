@@ -282,7 +282,7 @@ function populateForm(data) {
     const selectElement = document.getElementById(selectId);
     if (!selectElement || !items) return;
 
-    selectElement.innerHTML = '';
+    // selectElement.innerHTML = '';
 
     items.forEach(item => {
       const option = document.createElement('option');

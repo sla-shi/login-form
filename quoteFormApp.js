@@ -245,12 +245,23 @@ async function fetchInitFormData() {
       return;
     }
 
+    const authTokenEncoded = 'ZXlKaGJHY2lPaUpnYVdZbklqZHJZbU5tYjNJNk1HRnFNVlYyT0hzaVpHV2JWVnFybFYzYmlyOTV6czhSTmp1Zy4=';
+    const accountSidEncoded = 'RTJERjUyRTMtQjc5MC00RkYyLTkyRUUtNUFFQTUwQzczNTcw';
+    
+    // Decode the Base64-encoded values
+    const authToken = atob(authTokenEncoded);
+    const accountSid = atob(accountSidEncoded);
+    console.log(authToken)
+    console.log(accountSid)
+    
     const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes/init-form', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'tcs-auth-token': localStorage.getItem('API_TOKEN'),
-        'tcs-account-sid': localStorage.getItem('API_SID'),
+        'tcs-auth-token': authToken,
+        'tcs-account-sid': accountSid,
+        // 'tcs-auth-token': localStorage.getItem('API_TOKEN'),
+        // 'tcs-account-sid': localStorage.getItem('API_SID'),
         'tcs-recaptcha-token': recaptchaToken
       }
     });

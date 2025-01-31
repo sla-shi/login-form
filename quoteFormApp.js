@@ -245,8 +245,8 @@ async function fetchInitFormData() {
       return;
     }
 
-    const authTokenEncoded = 'ZXlKaGJHY2lPaUpnYVdZbklqZHJZbU5tYjNJNk1HRnFNVlYyT0hzaVpHV2JWVnFybFYzYmlyOTV6czhSTmp1Zy4=';
-    const accountSidEncoded = 'RTJERjUyRTMtQjc5MC00RkYyLTkyRUUtNUFFQTUwQzczNTcw';
+    const authTokenEncoded = 'ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnpkV0lpT2lJeE1qTTBOVFkzT0Rrd0lpd2libUZ0WlNJNklrcHZhRzRnUkc5bElpd2lhV0YwSWpveE5URTJNak01TURJeUxDSmljbUZ1WTJoZmFXUWlPak1zSW1OdmJYQmhibmxmYVdRaU9qTjkuVmxHTUtyelBiTHFBV0JpSTl5T0U2LUE5UF9RaVpRTmthRGF1eVVRYzdXSQ==';
+    const accountSidEncoded = 'RTFERjUyRTMtQjk3MC00RkYyLTkyRUUtNUFFQTUwQzczNTcw';
     
     // Decode the Base64-encoded values
     const authToken = atob(authTokenEncoded);

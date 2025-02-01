@@ -129,13 +129,14 @@ document.addEventListener('DOMContentLoaded', () => {
     alert(error.message || 'An error occurred. Pleas try again');
   };
 
-  if (typeof grecaptcha !== 'undefined') {
-    grecaptcha.ready(() => {
-      fetchInitFormData();
-    });
-  } else {
-    console.error('reCaptcha library is not loaded.');
-  }
+  // Removing this because it causes the double iinitlization of the form
+  // if (typeof grecaptcha !== 'undefined') {
+  //   grecaptcha.ready(() => {
+  //     fetchInitFormData();
+  //   });
+  // } else {
+  //   console.error('reCaptcha library is not loaded.');
+  // }
 
   quoteFormContainer.addEventListener('submit', async function (event) {
     event.preventDefault();

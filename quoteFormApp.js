@@ -1,3 +1,10 @@
+const authTokenEncoded = 'ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnpkV0lpT2lJeE1qTTBOVFkzT0Rrd0lpd2libUZ0WlNJNklrcHZhRzRnUkc5bElpd2lhV0YwSWpveE5URTJNak01TURJeUxDSmljbUZ1WTJoZmFXUWlPak1zSW1OdmJYQmhibmxmYVdRaU9qTjkuVmxHTUtyelBiTHFBV0JpSTl5T0U2LUE5UF9RaVpRTmthRGF1eVVRYzdXSQ==';
+const accountSidEncoded = 'RTFERjUyRTMtQjk3MC00RkYyLTkyRUUtNUFFQTUwQzczNTcw';
+
+// Decode the Base64-encoded values
+const authToken = atob(authTokenEncoded);
+const accountSid = atob(accountSidEncoded);
+
 document.addEventListener('DOMContentLoaded', () => {
 
   var formHTML = `
@@ -195,8 +202,10 @@ async function submitForm(formData) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'tcs-auth-token': localStorage.getItem('API_TOKEN'),
-        'tcs-account-sid': localStorage.getItem('API_SID'),
+        'tcs-auth-token': authToken,
+        'tcs-account-sid': accountSid,
+        // 'tcs-auth-token': localStorage.getItem('API_TOKEN'),
+        // 'tcs-account-sid': localStorage.getItem('API_SID'),
         'tcs-recaptcha-token': recaptchaToken
       },
       body: JSON.stringify(formData)
@@ -245,15 +254,6 @@ async function fetchInitFormData() {
       console.error('Failed to get reCAPTCHA token.');
       return;
     }
-
-    const authTokenEncoded = 'ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnpkV0lpT2lJeE1qTTBOVFkzT0Rrd0lpd2libUZ0WlNJNklrcHZhRzRnUkc5bElpd2lhV0YwSWpveE5URTJNak01TURJeUxDSmljbUZ1WTJoZmFXUWlPak1zSW1OdmJYQmhibmxmYVdRaU9qTjkuVmxHTUtyelBiTHFBV0JpSTl5T0U2LUE5UF9RaVpRTmthRGF1eVVRYzdXSQ==';
-    const accountSidEncoded = 'RTFERjUyRTMtQjk3MC00RkYyLTkyRUUtNUFFQTUwQzczNTcw';
-    
-    // Decode the Base64-encoded values
-    const authToken = atob(authTokenEncoded);
-    const accountSid = atob(accountSidEncoded);
-    console.log(authToken)
-    console.log(accountSid)
     
     const response = await fetch('https://api-dev.thecleaningsoftware.com/api/quotes/init-form', {
       method: 'GET',

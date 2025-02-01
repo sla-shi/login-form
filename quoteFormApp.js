@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>`;
   
   const quoteFormContainer = document.getElementById('quoteForm');
-  const termsCheckbox = document.getElementById('terms'); 
+  
   if (quoteFormContainer) {
     quoteFormContainer.innerHTML = formHTML;
 
@@ -124,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    const termsCheckbox = document.getElementById('terms'); 
     if (!termsCheckbox.checked) {
       return 'Please agree to the terms of service before submitting.';
     }
